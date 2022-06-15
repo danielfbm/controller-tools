@@ -1,4 +1,3 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -6,17 +5,17 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
-  name: testquotas.plural.example.com
+  name: zooes.bar.example.com
 spec:
-  group: plural.example.com
+  group: bar.example.com
   names:
-    kind: TestQuota
-    listKind: TestQuotaList
-    plural: testquotas
-    singular: testquota
+    kind: Zoo
+    listKind: ZooList
+    plural: zooes
+    singular: zoo
   scope: Namespaced
   versions:
-  - name: v1
+  - name: zoo
     schema:
       openAPIV3Schema:
         properties:
@@ -32,8 +31,20 @@ spec:
             type: string
           metadata:
             type: object
-          test:
-            type: string
+          spec:
+            description: Spec comments SHOULD appear in the CRD spec
+            properties:
+              defaultedString:
+                default: zooDefaultString
+                description: This tests that defaulted fields are stripped for v1beta1,
+                  but not for v1
+                type: string
+            required:
+            - defaultedString
+            type: object
+          status:
+            description: Status comments SHOULD appear in the CRD spec
+            type: object
         type: object
     served: true
     storage: true

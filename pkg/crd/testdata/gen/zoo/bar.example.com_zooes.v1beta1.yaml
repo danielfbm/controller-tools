@@ -5,14 +5,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
-  name: foos.bar.example.com
+  name: zoos.bar.example.com
 spec:
   group: bar.example.com
   names:
-    kind: Foo
-    listKind: FooList
-    plural: foos
-    singular: foo
+    kind: Zoo
+    listKind: ZooList
+    plural: zooes
+    singular: zoo
   scope: Namespaced
   validation:
     openAPIV3Schema:
@@ -43,8 +43,8 @@ spec:
           description: Status comments SHOULD appear in the CRD spec
           type: object
       type: object
-  version: foo
+  version: zoo
   versions:
-  - name: foo
+  - name: zoo
     served: true
     storage: true

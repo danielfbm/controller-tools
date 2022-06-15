@@ -35,6 +35,17 @@ spec:
           spec:
             description: CronJobSpec defines the desired state of CronJob
             properties:
+              array:
+                description: Checks that fixed-length arrays work
+                items:
+                  type: integer
+                type: array
+              arrayUsingCompositeLiteral:
+                description: Checks that arrays work when the type contains a composite
+                  literal
+                items:
+                  type: string
+                type: array
               associativeList:
                 description: This tests that associative lists work.
                 items:
@@ -55,6 +66,10 @@ spec:
                 - name
                 - secondary
                 x-kubernetes-list-type: map
+              baz:
+                description: This tests that exported fields are not skipped in the
+                  schema generation
+                type: string
               binaryName:
                 description: This tests byte slice schema generation.
                 format: byte
@@ -119,10 +134,31 @@ spec:
               embeddedResource:
                 type: object
                 x-kubernetes-embedded-resource: true
+                x-kubernetes-preserve-unknown-fields: true
               failedJobsHistoryLimit:
                 description: The number of failed finished jobs to retain. This is
                   a pointer to distinguish between explicit zero and not specified.
                 format: int32
+                type: integer
+              float64WithValidations:
+                maximum: 1.5
+                minimum: -0.5
+                multipleOf: 0.5
+                type: number
+              floatWithValidations:
+                maximum: 1.5
+                minimum: -0.5
+                multipleOf: 0.5
+                type: number
+              foo:
+                description: This tests that exported fields are not skipped in the
+                  schema generation
+                type: string
+              int32WithValidations:
+                format: int32
+                maximum: 2
+                minimum: -2
+                multipleOf: 2
                 type: integer
               intOrStringWithAPattern:
                 anyOf:
@@ -134,6 +170,11 @@ spec:
                   for having a pattern on this type.
                 pattern: ^((100|[0-9]{1,2})%|[0-9]+)$
                 x-kubernetes-int-or-string: true
+              intWithValidations:
+                maximum: 2
+                minimum: -2
+                multipleOf: 2
+                type: integer
               jobTemplate:
                 description: Specifies the job that will be created when executing
                   a CronJob.
@@ -7259,6 +7300,14 @@ spec:
                   type: array
                 description: This tests string slices are allowed as map values.
                 type: object
+              stringWithEvenLength:
+                description: Test of the expression-based validation rule marker,
+                  with optional message.
+                type: string
+                x-kubernetes-validations:
+                - message: must have even length
+                  rule: self.size() % 2 == 0
+                - rule: "true"
               structWithSeveralFields:
                 description: A struct that can only be entirely replaced
                 properties:
@@ -7296,7 +7345,12 @@ spec:
                 x-kubernetes-embedded-resource: true
                 x-kubernetes-preserve-unknown-fields: true
               unprunedFomType:
-                description: This tests that a type-level pruning maker works.
+                description: This tests that a type-level pruning marker works.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              unprunedFomTypeAndField:
+                description: This tests that a type-level pruning marker combined
+                  with a field-level pruning marker works.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               unprunedJSON:
@@ -7312,12 +7366,18 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
             required:
             - associativeList
+            - baz
             - binaryName
             - canBeNull
             - defaultedObject
             - defaultedSlice
             - defaultedString
             - embeddedResource
+            - float64WithValidations
+            - floatWithValidations
+            - foo
+            - int32WithValidations
+            - intWithValidations
             - jobTemplate
             - mapOfInfo
             - patternObject
@@ -7327,6 +7387,7 @@ spec:
             - twoOfAKindPart1
             - unprunedEmbeddedResource
             - unprunedFomType
+            - unprunedFomTypeAndField
             - unprunedJSON
             type: object
           status:
@@ -7450,6 +7511,24 @@ spec:
             type: string
           metadata:
             type: object
+          spec:
+            description: CronJobSpec defines the desired state of CronJob
+            properties:
+              int32WithValidations:
+                format: int32
+                maximum: 2
+                minimum: -2
+                multipleOf: 2
+                type: integer
+              twoOfAKindPart0:
+                description: This tests that markers that are allowed on both fields
+                  and types are applied to fields
+                minLength: 4
+                type: string
+            required:
+            - int32WithValidations
+            - twoOfAKindPart0
+            type: object
         type: object
     served: false
     storage: false
@@ -7480,9 +7559,3 @@ spec:
     storage: false
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
