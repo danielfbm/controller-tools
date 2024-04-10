@@ -107,15 +107,30 @@ type CronJobSpec struct {
 
 	// This tests that primitive defaulting can be performed.
 	// +kubebuilder:default=forty-two
+	// +kubebuilder:example=forty-two
 	DefaultedString string `json:"defaultedString"`
 
 	// This tests that slice defaulting can be performed.
 	// +kubebuilder:default={a,b}
+	// +kubebuilder:example={a,b}
 	DefaultedSlice []string `json:"defaultedSlice"`
 
 	// This tests that object defaulting can be performed.
 	// +kubebuilder:default={{nested: {foo: "baz", bar: true}},{nested: {bar: false}}}
+	// +kubebuilder:example={{nested: {foo: "baz", bar: true}},{nested: {bar: false}}}
 	DefaultedObject []RootObject `json:"defaultedObject"`
+
+	// This tests that empty slice defaulting can be performed.
+	// +kubebuilder:default={}
+	DefaultedEmptySlice []string `json:"defaultedEmptySlice"`
+
+	// This tests that an empty object defaulting can be performed on a map.
+	// +kubebuilder:default={}
+	DefaultedEmptyMap map[string]string `json:"defaultedEmptyMap"`
+
+	// This tests that an empty object defaulting can be performed on an object.
+	// +kubebuilder:default={}
+	DefaultedEmptyObject EmpiableObject `json:"defaultedEmptyObject"`
 
 	// This tests that pattern validator is properly applied.
 	// +kubebuilder:validation:Pattern=`^$|^((https):\/\/?)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))$`
@@ -162,8 +177,12 @@ type CronJobSpec struct {
 	StructWithSeveralFields NestedObject `json:"structWithSeveralFields"`
 
 	// A struct that can only be entirely replaced via a nested type.
-	// +structType=atomic
 	NestedStructWithSeveralFields NestedStructWithSeveralFields `json:"nestedStructWithSeveralFields"`
+
+	// A struct that can only be entirely replaced via a nested type and
+	// field markers.
+	// +structType=atomic
+	NestedStructWithSeveralFieldsDoubleMarked NestedStructWithSeveralFields `json:"nestedStructWithSeveralFieldsDoubleMarked"`
 
 	// This tests that type references are properly flattened
 	// +kubebuilder:validation:optional
@@ -178,7 +197,7 @@ type CronJobSpec struct {
 
 	// This tests that an IntOrString can also have a pattern attached
 	// to it.
-	// This can be useful if you want to limit the string to a perecentage or integer.
+	// This can be useful if you want to limit the string to a percentage or integer.
 	// The XIntOrString marker is a requirement for having a pattern on this type.
 	// +kubebuilder:validation:XIntOrString
 	// +kubebuilder:validation:Pattern="^((100|[0-9]{1,2})%|[0-9]+)$"
@@ -233,6 +252,32 @@ type CronJobSpec struct {
 
 	// Checks that arrays work when the type contains a composite literal
 	ArrayUsingCompositeLiteral [len(struct{ X [3]int }{}.X)]string `json:"arrayUsingCompositeLiteral,omitempty"`
+
+	// This tests string slice item validation.
+	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:items:MinLength=1
+	// +kubebuilder:validation:items:MaxLength=255
+	// +kubebuilder:validation:items:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?([.][a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+	// +listType=set
+	Hosts []string `json:"hosts,omitempty"`
+
+	HostsAlias Hosts `json:"hostsAlias,omitempty"`
+
+	// This tests string slice validation.
+	// +kubebuilder:validation:MinItems=2
+	// +kubebuilder:validation:MaxItems=2
+	StringPair []string `json:"stringPair"`
+
+	// This tests string alias slice item validation.
+	// +kubebuilder:validation:MinItems=3
+	LongerStringArray []LongerString `json:"longerStringArray,omitempty"`
+
+	// This tests that a slice of IntOrString can also have a pattern attached to it.
+	// This can be useful if you want to limit the string to a percentage or integer.
+	// The XIntOrString marker is a requirement for having a pattern on this type.
+	// +kubebuilder:validation:items:XIntOrString
+	// +kubebuilder:validation:items:Pattern="^((100|[0-9]{1,2})%|[0-9]+)$"
+	IntOrStringArrayWithAPattern []*intstr.IntOrString `json:"intOrStringArrayWithAPattern,omitempty"`
 }
 
 type ContainsNestedMap struct {
@@ -290,6 +335,13 @@ type MinMaxObject struct {
 	Baz string `json:"baz,omitempty"`
 }
 
+type EmpiableObject struct {
+
+	// +kubebuilder:default=forty-two
+	Foo string `json:"foo,omitempty"`
+	Bar string `json:"bar,omitempty"`
+}
+
 type unexportedStruct struct {
 	// This tests that exported fields are not skipped in the schema generation
 	Foo string `json:"foo"`
@@ -333,6 +385,14 @@ type LongerString string
 // +kubebuilder:validation:Type=string
 // TotallyABool is a bool that serializes as a string.
 type TotallyABool bool
+
+// This tests string slice item validation.
+// +kubebuilder:validation:MinItems=1
+// +kubebuilder:validation:items:MinLength=1
+// +kubebuilder:validation:items:MaxLength=255
+// +kubebuilder:validation:items:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?([.][a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+// +listType=set
+type Hosts []string
 
 func (t TotallyABool) MarshalJSON() ([]byte, error) {
 	if t {
@@ -499,6 +559,7 @@ type CronJobStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:singular=mycronjob
 // +kubebuilder:storageversion
+// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes-sigs/controller-tools";"cert-manager.io/inject-ca-from-secret=cert-manager/cert-manager-webhook-ca"
 
 // CronJob is the Schema for the cronjobs API
 type CronJob struct {
